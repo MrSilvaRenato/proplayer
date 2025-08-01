@@ -62,7 +62,7 @@ $players = $stmt->fetchAll();
             <td><?= htmlspecialchars($player['username']) ?></td>
             <td><?= date('d M Y', strtotime($player['created_at'])) ?></td>
             <td>
-                <a href="../public/profile.php?id=<?= $player['id'] ?>" class="btn btn-sm btn-outline-info" target="_blank">View</a>
+                <a href="../public/profile.php?id=<?= $player['id'] ?>&ref=admin" class="btn btn-sm btn-outline-info" target="_blank">View</a>
                 <a href="delete_player.php?id=<?= $player['id'] ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this player?')">Delete</a>
             </td>
         </tr>
