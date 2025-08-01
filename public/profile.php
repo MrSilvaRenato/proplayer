@@ -1,6 +1,6 @@
 <?php
 require_once '../includes/db.php';
-
+$isAdminViewing = isset($_GET['ref']) && $_GET['ref'] === 'admin';
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     echo "Invalid profile ID.";
     exit;
