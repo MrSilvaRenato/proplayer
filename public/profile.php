@@ -43,8 +43,13 @@ if (!$profile) {
 require_once '../includes/header.php';
 ?> 
 
-    <a href="dashboard.php" class="btn btn-sm btn-secondary mb-3">← Back</a>
-    <a href="edit_profile.php" class="btn btn-sm btn-secondary mb-3">Edit Profile</a>
+<!-- Back Button -->
+<a href="<?= $isAdminViewing ? '../admin/admin_dashboard.php' : 'dashboard.php' ?>" class="btn btn-outline-secondary mb-3">← Back</a>
+
+<!--Only show edit profile if not admin -->
+   <?php if (!$isAdminViewing && isset($_SESSION['user_id']) && $_SESSION['user_id'] == $profile['user_id']): ?>
+    <a href="edit_profile.php?id=<?= $profile['id'] ?>" class="btn btn-primary mb-3 ms-2">Edit Profile</a>
+<?php endif; ?>
 
     <div class="card shadow player-card">
         <div class="card-body">
