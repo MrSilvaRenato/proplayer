@@ -48,7 +48,8 @@ $players = $stmt->fetchAll();
     <title>Explore Players - ProPlayer</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    <!-- <link rel="stylesheet" href="css/style.css"> -->
+    <link rel="stylesheet" href="css/toast.css">
     <style>
         .card-title { font-size: 1.2rem; font-weight: bold; }
         .card-text { font-size: 0.95rem; color: #555; }
@@ -67,10 +68,18 @@ $players = $stmt->fetchAll();
     </style>
 </head>
 <body class="bg-light">
+    
+<?php if (!empty($success_message)): ?>
+  <div class="alert alert-success"><?= htmlspecialchars($success_message) ?></div>
+<?php endif; ?>
+<?php if (!empty($error_message)): ?>
+
+  <script>showToast('error', <?= json_encode($error_message) ?>);</script>
+<?php endif; ?>
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
-        <a class="navbar-brand" href="index.php">NextKick</a>
+        <a class="navbar-brand" href="index.php">To be confirmed</a>
         <div class="d-flex">
             <?php if (isset($_SESSION['user_id'])): ?>
                 <a href="public/dashboard.php" class="btn btn-outline-light btn-sm me-2">Dashboard</a>
@@ -143,6 +152,7 @@ $players = $stmt->fetchAll();
         <div class="alert alert-info text-center">No player profiles yet. Be the first to <a href="register.php">create one</a>!</div>
     <?php endif; ?>
 </div>
-
+<script src="js/toast.js"></script>
+<?php include 'includes/toast.php';?>
 </body>
 </html>

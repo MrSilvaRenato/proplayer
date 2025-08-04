@@ -22,11 +22,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['role'] = $user['role']; // Store user role in session
 
             // ⛳ Redirect based on role
-            if ($user['role'] === 'admin') {
-                header("Location: ../admin/admin_dashboard.php");
-            } else {
-                header("Location: dashboard.php");
-            }
+          if ($user['role'] === 'admin') {
+    $_SESSION['toast'] = ['type' => 'success', 'message' => 'Welcome back, ' . $user['username'] . '!'];
+    header("Location: ../admin/admin_dashboard.php");
+} else {
+    $_SESSION['toast'] = ['type' => 'success', 'message' => 'Welcome back, ' . $user['username'] . '!'];
+    header("Location: dashboard.php");
+}
             exit;
         } else {
             $errors[] = "Incorrect email or password.";
@@ -42,7 +44,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Login - NextKick</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body class="bg-light">
+<?php require_once '../includes/header.php';?>
+
+    <?php if (!empty($success_message)): ?>
+  <div class="alert alert-success"><?= htmlspecialchars($success_message) ?></div>
+<?php endif; ?>
+<?php if (!empty($error_message)): ?>
+
+  <script>showToast('error', <?= json_encode($error_message) ?>);</script>
+<?php endif; ?>
+
 <div class="container mt-5">
     <h2 class="mb-4">Login</h2>
 
@@ -69,5 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <a href="register.php" class="btn btn-link">Create Account</a>
     </form>
 </div>
+<script src="../js/toast.js"></script>
+<?php include '../includes/toast.php'; ?>
 </body>
 </html>

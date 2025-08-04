@@ -7,5 +7,5 @@ define('DB_USER', 'root');
 define('DB_PASS', ''); // leave blank if no password on XAMPP
 
 // Optional: define base URL if you want
-define('BASE_URL', 'http://localhost/proplayer/');
+define('BASE_URL', '/proplayer/');
 ?>

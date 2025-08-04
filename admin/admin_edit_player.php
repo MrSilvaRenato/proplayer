@@ -8,12 +8,13 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     exit;
 }
 
-// Validate ID
-if (!isset($_GET['id'])) {
-    echo "Invalid player ID.";
+// Validate player ID
+$playerId = isset($_GET['id']) ? intval($_GET['id']) : null;
+if (!$playerId) {
+    $_SESSION['toast'] = ['type' => 'error', 'message' => 'Invalid player ID.'];
+    header("Location: admin_dashboard.php");
     exit;
 }
-$playerId = intval($_GET['id']);
 
 // Fetch player profile
 $stmt = $pdo->prepare("SELECT * FROM player_profiles WHERE id = ?");
@@ -21,12 +22,12 @@ $stmt->execute([$playerId]);
 $player = $stmt->fetch();
 
 if (!$player) {
-    echo "Player not found.";
+    $_SESSION['toast'] = ['type' => 'error', 'message' => 'Player not found.'];
+    header("Location: admin_dashboard.php");
     exit;
 }
 
 // Handle update
-$success = false;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $full_name = trim($_POST['full_name']);
     $position = trim($_POST['position']);
@@ -35,30 +36,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $instagram_url = trim($_POST['instagram_url']);
     $youtube_url = trim($_POST['youtube_url']);
 
-    $stmt = $pdo->prepare("UPDATE player_profiles SET full_name = ?, position = ?, location = ?, bio = ?, instagram_url = ?, youtube_url = ? WHERE id = ?");
+    $stmt = $pdo->prepare("UPDATE player_profiles SET 
+        full_name = ?, position = ?, location = ?, bio = ?, instagram_url = ?, youtube_url = ?
+        WHERE id = ?");
     $stmt->execute([$full_name, $position, $location, $bio, $instagram_url, $youtube_url, $playerId]);
-    $success = true;
 
-    // Refresh player data
-    $stmt = $pdo->prepare("SELECT * FROM player_profiles WHERE id = ?");
-    $stmt->execute([$playerId]);
-    $player = $stmt->fetch();
+    $_SESSION['toast'] = ['type' => 'success', 'message' => 'Player profile updated successfully.'];
+    header("Location: admin_edit_player.php?id=$playerId");
+    exit;
 }
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Edit Player - Admin</title>
+    <title>Edit Player - Admin | NextKick</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/toast.css" rel="stylesheet">
 </head>
 <body class="bg-light">
+
 <div class="container mt-4">
     <h3 class="mb-4">✏️ Edit Player Profile (Admin)</h3>
-
-    <?php if ($success): ?>
-        <div class="alert alert-success">✅ Profile updated successfully.</div>
-    <?php endif; ?>
 
     <form method="post">
         <div class="mb-3">
@@ -90,6 +89,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <a href="admin_dashboard.php" class="btn btn-secondary">Back to Dashboard</a>
     </form>
 </div>
+
+<script src="../js/toast.js"></script>
+<?php include '../includes/toast.php'; ?>
 </body>
 </html>
-
