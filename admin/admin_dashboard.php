@@ -12,6 +12,22 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 $stmt = $pdo->query("SELECT p.*, u.username FROM player_profiles p JOIN users u ON p.user_id = u.id ORDER BY p.created_at DESC");
 $players = $stmt->fetchAll();
 
+$stmt = $pdo->query("
+  SELECT 
+    u.id AS user_id,
+    u.username,
+    u.is_verified,
+    p.id AS profile_id,
+    p.full_name,
+    p.position,
+    p.location,
+    p.created_at
+  FROM player_profiles p
+  JOIN users u ON p.user_id = u.id
+  ORDER BY p.created_at DESC
+");
+$players = $stmt->fetchAll();
+
 // Count flagged reviews
 $flaggedStmt = $pdo->query("
     SELECT COUNT(*) FROM player_reviews 
@@ -151,6 +167,7 @@ sort($allDates);
     <title>NextKick</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../css/toast.css">
+     <link rel="stylesheet" href="../css/style.css">
 </head>
 <body class="bg-light">
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -236,34 +253,39 @@ sort($allDates);
 
 <div class="table-responsive">
 <table class="table table-bordered table-hover">
-    <thead class="table-dark">
+    <thead class="table-dark" >
         <tr>
-            <th>Player</th>
-            <th>Position</th>
-            <th>Location</th>
-            <th>Username</th>
-            <th>Created</th>
-            <th>Actions</th>
+            <th>SUBSCRIPTION</th>
+            <th>NAME</th>
+            <th>LOCATION</th>
+            <th>POSITION</th>
+            <th>CREATED</th>
+            <th>ACTIONS</th>
         </tr>
     </thead>
     <tbody>
-    <?php foreach ($players as $player): ?>
-        <tr>
-            <td><?= htmlspecialchars($player['full_name']) ?></td>
-            <td><?= htmlspecialchars($player['position']) ?></td>
-            <td><?= htmlspecialchars($player['location']) ?></td>
-            <td><?= htmlspecialchars($player['username']) ?></td>
-            <td><?= date('d M Y', strtotime($player['created_at'])) ?></td>
-            <td>
-               <a href="admin_edit_player.php?id=<?= $player['id'] ?>" class="btn btn-sm btn-outline-warning">Edit</a>
-               <a href="../public/profile.php?id=<?= $player['id'] ?>&ref=admin" class="btn btn-sm btn-outline-info" target="_blank">View</a>
+<?php foreach ($players as $player): ?>
+    <tr>
+        <td>
+          <?php if (!empty($player['is_verified'])): ?>
+            <span class="badge bg-success">✔ Verified</span>
+          <?php else: ?>
+            <span class="badge bg-secondary">Free</span>
+          <?php endif; ?>
+        </td>
+        <td><?= htmlspecialchars($player['full_name']) ?></td>
+        <td><?= htmlspecialchars($player['location']) ?></td>
+        <td><?= htmlspecialchars($player['position']) ?></td>    
+        <td><?= date('d M Y', strtotime($player['created_at'])) ?></td>
+        <td>
+           <a href="admin_edit_player.php?id=<?= $player['user_id'] ?>" class="btn btn-sm btn-outline-warning">Edit</a>
+           <a href="../public/profile.php?id=<?= $player['profile_id'] ?>&ref=admin" class="btn btn-sm btn-outline-info" target="_blank">View</a>
+           <!-- <a href="delete_player.php?id=<?= $player['user_id'] ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this player?')">Delete</a> -->
+        </td>
+    </tr>
+<?php endforeach; ?>
+</tbody>
 
-               <a href="delete_player.php?id=<?= $player['id'] ?>" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this player?')">Delete</a>
-
-            </td>
-        </tr>
-    <?php endforeach; ?>
-    </tbody>
 </table>
 </div>
 

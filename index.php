@@ -2,10 +2,20 @@
 require_once 'includes/db.php';
 session_start();
 
-// Fetch recent or random player profiles (limit 12 for homepage)
-$stmt = $pdo->prepare("SELECT * FROM player_profiles ORDER BY created_at DESC LIMIT 12");
-$stmt->execute();
-$players = $stmt->fetchAll();
+// // Fetch recent or random player profiles (limit 12 for homepage)
+// $stmt = $pdo->prepare("SELECT * FROM player_profiles ORDER BY created_at DESC LIMIT 12");
+// $stmt->execute();
+// $players = $stmt->fetchAll();
+
+// $sql = "SELECT p.*, u.username, u.subscription_plan, u.is_verified
+//         FROM player_profiles p
+//         JOIN users u ON p.user_id = u.id
+//         WHERE 1=1";
+// $stmt = $pdo->prepare($sql);
+// $players = $stmt->fetchAll();
+
+
+
 
 // Get filter values
 $position = $_GET['position'] ?? '';
@@ -29,7 +39,10 @@ if ($name) {
     $params[] = '%' . $name . '%';
 }
 
-$sql = "SELECT * FROM player_profiles";
+$sql = "SELECT p.*, u.username, u.subscription_plan, u.is_verified
+        FROM player_profiles p
+        JOIN users u ON p.user_id = u.id";
+
 if ($where) {
     $sql .= " WHERE " . implode(" AND ", $where);
 }
@@ -51,20 +64,51 @@ $players = $stmt->fetchAll();
     <!-- <link rel="stylesheet" href="css/style.css"> -->
     <link rel="stylesheet" href="css/toast.css">
     <style>
-        .card-title { font-size: 1.2rem; font-weight: bold; }
-        .card-text { font-size: 0.95rem; color: #555; }
-        .btn-view { font-size: 0.9rem; }
+.card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: #222;
+}
+
+.card-text p {
+  margin-bottom: 4px;
+  font-size: 0.8rem;
+  color: #444;
+}
+
+.card-text small {
+  font-size: 0.85rem;
+  color: #777;
+}
+
+.btn-view {
+  font-size: 0.85rem;
+  padding: 5px 10px;
+}
+
+.card-body {
+  padding: 0.75rem;
+}
+
+@media (max-width: 768px) {
+  .card-title {
+    font-size: 1rem;
+  }
+  .card-text p {
+    font-size: 0.9rem;
+  }
+  .player-photo {
+    width: 100px !important;
+    height: 100px !important;
+  }
+}
+
         .card:hover {
             transform: scale(1.02);
             transition: all 0.2s ease-in-out;
         }
-        .player-photo {
-            height: 320px;
-            object-fit: cover;
-            width: 100%;
-            border-top-left-radius: 0.375rem;
-            border-top-right-radius: 0.375rem;
-        }
+     
     </style>
 </head>
 <body class="bg-light">
@@ -79,7 +123,7 @@ $players = $stmt->fetchAll();
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
-        <a class="navbar-brand" href="index.php">To be confirmed</a>
+        <a class="navbar-brand" href="index.php">NextKick</a>
         <div class="d-flex">
             <?php if (isset($_SESSION['user_id'])): ?>
                 <a href="public/dashboard.php" class="btn btn-outline-light btn-sm me-2">Dashboard</a>
@@ -127,25 +171,36 @@ $players = $stmt->fetchAll();
     <?php if (count($players) > 0): ?>
         <div class="row">
             <?php foreach ($players as $player): ?>
-                <div class="col-md-4 mb-4">
-                    <div class="card shadow-sm h-100 border-0">
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card shadow-sm h-100 border-0 d-flex flex-row align-items-center p-2" style="min-height: 140px;">
+                        <div class="me-3">
                         <?php if (!empty($player['profile_picture'])): ?>
-                            <img class="card-img-top player-photo" src="uploads/profile_pictures/<?= htmlspecialchars($player['profile_picture']) ?>" alt="Player photo">
+                            <img src="uploads/profile_pictures/<?= htmlspecialchars($player['profile_picture']) ?>" 
+                                alt="Player photo" class="rounded" style="width: 120px; height: 120px; object-fit: cover;">
                         <?php else: ?>
-                            <img src="https://placehold.co/400x220?text=Player+Photo" class="card-img-top player-photo" alt="Default photo">
+                            <img src="https://placehold.co/120x120?text=Photo" 
+                                alt="Default" class="rounded" style="width: 120px; height: 120px; object-fit: cover;">
                         <?php endif; ?>
+                        </div>
 
-                        <div class="card-body">
-                            <h5 class="card-title"><?= htmlspecialchars($player['full_name']) ?></h5>
-                            <p class="card-text">
-                                <strong>Position:</strong> <?= htmlspecialchars($player['position']) ?><br>
-                                <strong>Location:</strong> <?= htmlspecialchars($player['location']) ?><br>
-                                <small><?= htmlspecialchars(substr($player['bio'], 0, 70)) ?>...</small>
-                            </p>
-                            <a href="public/profile.php?id=<?= $player['id'] ?>" class="btn btn-outline-primary btn-sm">View Profile</a>
+                        <div class="flex-grow-1">
+                        <h5 class="card-title mb-1">
+                        <?= htmlspecialchars($player['full_name']) ?>
+                        <?php if (!empty($player['is_verified'])): ?>
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg"
+                                alt="Verified" title="Verified Account"
+                                style="width:18px; height:18px; vertical-align:middle; margin-left:4px;">
+                        <?php endif; ?>
+                        </h5>
+                        <div class="card-text">
+                        <p><strong>Position:</strong> <?= htmlspecialchars($player['position']) ?></p>
+                        <p><strong>Location:</strong> <?= htmlspecialchars($player['location']) ?></p>
+                        <!-- <small><?= htmlspecialchars(substr($player['bio'], 0, 70)) ?>...</small>    -->
+                        </div>
+                        <a href="public/profile.php?id=<?= $player['id'] ?>" class="btn btn-sm btn-outline-primary btn-view mt-2">View Profile</a>
                         </div>
                     </div>
-                </div>
+                    </div>
             <?php endforeach; ?>
         </div>
     <?php else: ?>

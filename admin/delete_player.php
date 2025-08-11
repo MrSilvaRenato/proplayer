@@ -1,18 +1,19 @@
-<?php
-session_start();
-require_once '../includes/db.php';
+// <?php
+// session_start();
+// require_once '../includes/db.php';
 
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header('Location: ../index.php');
-    exit;
-}
+// if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
+    // header('Location: ../index.php');
+    // exit;
+// }
 
-$id = $_GET['id'] ?? null;
+// $id = $_GET['id'] ?? null;
 
-if ($id) {
-    $stmt = $pdo->prepare("DELETE FROM player_profiles WHERE id = ?");
-    $stmt->execute([$id]);
-}
+// if ($id) {
+    // $stmt = $pdo->prepare("DELETE FROM users WHERE id = ?");
+    // $stmt->execute([$id]);
+// }
 
-header('Location: admin_dashboard.php');
-exit;
+// header('Location: admin_dashboard.php');
+// exit;
+?>

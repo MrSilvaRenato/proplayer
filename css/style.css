@@ -1,0 +1,14 @@
+/* Subscription bage */
+.badge {
+  font-size: 0.75rem;
+  padding: 5px 10px;
+  border-radius: 20px;
+}
+.bg-success {
+  background-color: #28a745;
+  color: white;
+}
+.bg-secondary {
+  background-color: #6c757d;
+  color: white;
+}

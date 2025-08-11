@@ -1,5 +1,7 @@
 <?php
 session_start();
+
+$userId = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
 require_once '../includes/db.php';
 
 if (!isset($_SESSION['user_id'])) {
@@ -7,9 +9,19 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-// Fetch player profile
-$userId = $_SESSION['user_id'];
-$stmt = $pdo->prepare("SELECT * FROM player_profiles WHERE user_id = ?");
+// // Fetch player profile
+// $userId = $_SESSION['user_id'];
+// $stmt = $pdo->prepare("SELECT * FROM player_profiles WHERE user_id = ?");
+// $stmt->execute([$userId]);
+// $profile = $stmt->fetch();
+
+
+$stmt = $pdo->prepare("
+    SELECT p.*, u.username, u.subscription_plan, u.is_verified
+    FROM player_profiles p
+    JOIN users u ON p.user_id = u.id
+    WHERE p.user_id = ?
+");
 $stmt->execute([$userId]);
 $profile = $stmt->fetch();
 
@@ -114,7 +126,13 @@ require_once '../includes/header.php';
 }
 </style>
 
-<h2 class="mb-4">Welcome, <?= htmlspecialchars($_SESSION['username']) ?>!</h2>
+<h2 class="mb-4">Welcome, <?= htmlspecialchars($_SESSION['username']) ?>! 
+<?php if (!empty($profile['is_verified'])): ?>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg" 
+       alt="Verified" title="Verified Account"
+       style="width:18px; height:18px; margin-left:6px; vertical-align:middle;">
+<?php endif; ?>
+</h2>
 
 <div class="dashboard-container">
     <div class="sidebar">
@@ -124,7 +142,7 @@ require_once '../includes/header.php';
         <a href="#charts">📈 Charts</a>
         <a href="#awards">🏆 Awards</a>
         <a href="#reviews">💬 Reviews</a>
-        <a href="edit_profile.php">✏️ Edit Profile</a>
+        <a href="edit_profile.php?id=<?= $profile['id'] ?>">✏️ Edit Profile</a>
         <a href="logout.php">🚪 Logout</a>
 
 <?php if ($newReviewsCount > 0): ?>
@@ -319,7 +337,6 @@ require_once '../includes/header.php';
                     JOIN users u ON r.reviewer_user_id = u.id
                     WHERE r.profile_id = ?
                     ORDER BY r.created_at DESC
-                    LIMIT 3
                 ");
                 $reviewStmt->execute([$profile['id']]);
                 $reviews = $reviewStmt->fetchAll();

@@ -17,32 +17,23 @@ if (!$playerId) {
 }
 
 // Fetch player profile
-$stmt = $pdo->prepare("SELECT * FROM player_profiles WHERE id = ?");
+$stmt = $pdo->prepare("
+    SELECT u.id AS user_id, u.username, u.email, u.is_verified,
+           p.id AS profile_id, p.full_name, p.position, p.location,
+           p.instagram_url, p.youtube_url, p.bio, p.created_at
+    FROM users u
+    JOIN player_profiles p ON u.id = p.user_id
+    WHERE u.id = ?
+");
 $stmt->execute([$playerId]);
 $player = $stmt->fetch();
+
+
+
 
 if (!$player) {
     $_SESSION['toast'] = ['type' => 'error', 'message' => 'Player not found.'];
     header("Location: admin_dashboard.php");
-    exit;
-}
-
-// Handle update
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $full_name = trim($_POST['full_name']);
-    $position = trim($_POST['position']);
-    $location = trim($_POST['location']);
-    $bio = trim($_POST['bio']);
-    $instagram_url = trim($_POST['instagram_url']);
-    $youtube_url = trim($_POST['youtube_url']);
-
-    $stmt = $pdo->prepare("UPDATE player_profiles SET 
-        full_name = ?, position = ?, location = ?, bio = ?, instagram_url = ?, youtube_url = ?
-        WHERE id = ?");
-    $stmt->execute([$full_name, $position, $location, $bio, $instagram_url, $youtube_url, $playerId]);
-
-    $_SESSION['toast'] = ['type' => 'success', 'message' => 'Player profile updated successfully.'];
-    header("Location: admin_edit_player.php?id=$playerId");
     exit;
 }
 ?>
@@ -59,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <div class="container mt-4">
     <h3 class="mb-4">✏️ Edit Player Profile (Admin)</h3>
 
-    <form method="post">
+    <form action="admin_update_profile.php" method="POST" enctype="multipart/form-data">
         <div class="mb-3">
             <label>Full Name</label>
             <input type="text" name="full_name" class="form-control" value="<?= htmlspecialchars($player['full_name']) ?>" required>
@@ -87,6 +78,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <button type="submit" class="btn btn-primary">Update</button>
         <a href="admin_dashboard.php" class="btn btn-secondary">Back to Dashboard</a>
+        <input type="hidden" name="user_id" value="<?= $player['user_id'] ?>">
+
     </form>
 </div>
 

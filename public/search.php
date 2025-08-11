@@ -1,27 +1,40 @@
 <?php
+session_start();
 require_once '../includes/db.php';
 
+if (!isset($_SESSION['user_id'])) {
+    header('Location: login.php');
+    exit;
+}
+// / is verified?
+$userId = $_SESSION['user_id'];
 // Get filters if submitted
 $position = $_GET['position'] ?? '';
 $location = $_GET['location'] ?? '';
 
-// Build dynamic query
-$sql = "SELECT * FROM player_profiles WHERE 1=1";
+$sql = "SELECT p.*, u.username, u.subscription_plan, u.is_verified
+        FROM player_profiles p
+        JOIN users u ON p.user_id = u.id
+        WHERE 1=1";
 $params = [];
 
 if (!empty($position)) {
-    $sql .= " AND position = ?";
+    $sql .= " AND p.position = ?";
     $params[] = $position;
 }
 
 if (!empty($location)) {
-    $sql .= " AND location LIKE ?";
+    $sql .= " AND p.location LIKE ?";
     $params[] = "%$location%";
 }
 
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $players = $stmt->fetchAll();
+
+
+
+
 ?>
 
 <!DOCTYPE html>
@@ -61,7 +74,13 @@ $players = $stmt->fetchAll();
                 <div class="col-md-4 mb-4">
                     <div class="card shadow-sm">
                         <div class="card-body">
-                            <h5><?= htmlspecialchars($player['full_name']) ?></h5>
+    <h5><?= htmlspecialchars($player['full_name']) ?>
+<?php if (!empty($player['is_verified'])): ?>
+  <img src="https://upload.wikimedia.org/wikipedia/commons/e/e4/Twitter_Verified_Badge.svg" 
+       alt="Verified" title="Verified Account"
+       style="width:18px; height:18px; margin-left:6px; vertical-align:middle;">
+<?php endif; ?>
+</h5>
                             <p><strong><?= htmlspecialchars($player['position']) ?></strong><br>
                                <?= htmlspecialchars($player['location']) ?></p>
                             <a href="profile.php?id=<?= $player['id'] ?>" class="btn btn-sm btn-outline-primary">View Profile</a>
